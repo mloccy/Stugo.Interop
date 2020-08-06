@@ -42,5 +42,4 @@
   <ItemGroup>
     <Compile Remove="Properties\VersionInfo.cs" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" />
 </Project>
