@@ -8,14 +8,9 @@ namespace Stugo.Interop
     /// <summary>
     /// Allows the specification of the unmanaged entry point.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Delegate)]
     public class EntryPointAttribute : Attribute
     {
-        public EntryPointAttribute(string entryPoint)
-        {
-            EntryPoint = entryPoint;
-        }
-
         public string EntryPoint { get; set; }
     }
 }
