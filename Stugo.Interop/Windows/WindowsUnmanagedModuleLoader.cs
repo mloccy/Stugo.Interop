@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Stugo.Interop.Windows
 {
     public class WindowsUnmanagedModuleLoader : UnmanagedModuleLoaderBase
     {
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         protected static extern IntPtr LoadLibrary(string filename);
 
         [DllImport("kernel32.dll")]

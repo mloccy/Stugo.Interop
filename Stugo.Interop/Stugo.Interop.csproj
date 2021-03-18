@@ -6,6 +6,8 @@
     <RootNamespace>Stugo.Interop</RootNamespace>
     <AssemblyName>Stugo.Interop</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == Debug">
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
