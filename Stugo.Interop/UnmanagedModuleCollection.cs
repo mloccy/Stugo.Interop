@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.IO;
+﻿using System.Reflection;
 
 namespace Stugo.Interop
 {
@@ -23,7 +18,9 @@ namespace Stugo.Interop
                     _Instance = new UnmanagedModuleCollection();
                 return _Instance;
             }
-        } static UnmanagedModuleCollection _Instance = null;
+        }
+
+        static UnmanagedModuleCollection? _Instance = null;
 
 
         /// <summary>
@@ -42,12 +39,12 @@ namespace Stugo.Interop
 
 
         /// <summary>
-        /// Loads the module at the given path and produces a 
+        /// Loads the module at the given path and produces a
         /// wrapper instance for it.
         /// </summary>
-        public TWrapper LoadModule<TWrapper>(string modulePath)
+        public TWrapper? LoadModule<TWrapper>(string modulePath)
         {
-            return (TWrapper)LoadModule(modulePath, typeof(TWrapper));
+            return (TWrapper?)LoadModule(modulePath, typeof(TWrapper));
         }
 
 
@@ -55,7 +52,7 @@ namespace Stugo.Interop
         /// Loads the module at the given path and produces a
         /// wrapper instance for it.
         /// </summary>
-        public object LoadModule(string modulePath, Type wrapperType)
+        public object? LoadModule(string modulePath, Type wrapperType)
         {
             if (this.modules.ContainsKey(wrapperType))
             {
@@ -65,25 +62,29 @@ namespace Stugo.Interop
                         wrapperType.FullName));
             }
 
-            object instance = LoadUnmanagedModule(modulePath, wrapperType);
-            this.modules.Add(wrapperType, instance);
-            return instance;
+            var instance = LoadUnmanagedModule(modulePath, wrapperType);
+            if (instance != null)
+            {
+                this.modules.Add(wrapperType, instance);
+                return instance;
+            }
+            return null;
         }
 
 
         /// <summary>
         /// Loads an unmanaged module from an embedded resource stream.
         /// </summary>
-        public TWrapper LoadModuleFromEmbeddedResource<TWrapper>(Assembly resourceAssembly, string resourceId)
+        public TWrapper? LoadModuleFromEmbeddedResource<TWrapper>(Assembly resourceAssembly, string resourceId)
         {
-            return (TWrapper)LoadModuleFromEmbeddedResource(resourceAssembly, resourceId, typeof(TWrapper));
+            return (TWrapper?)LoadModuleFromEmbeddedResource(resourceAssembly, resourceId, typeof(TWrapper));
         }
 
 
         /// <summary>
         /// Loads an unmanaged module from an embedded resource stream.
         /// </summary>
-        public object LoadModuleFromEmbeddedResource(Assembly resourceAssembly, string resourceId, Type wrapperType)
+        public object? LoadModuleFromEmbeddedResource(Assembly resourceAssembly, string resourceId, Type wrapperType)
         {
             if (this.modules.ContainsKey(wrapperType))
             {
@@ -93,9 +94,11 @@ namespace Stugo.Interop
                         wrapperType.FullName));
             }
 
-            string modulepath = Path.Combine(
+            var assemblyName = resourceAssembly.GetName();
+
+            string modulepath = Path.Join(
                 Path.GetTempPath(),
-                resourceAssembly.GetName().Name + "." + resourceAssembly.GetName().Version.ToString());
+                $"{assemblyName.Name}.{assemblyName.Version}");
 
             Directory.CreateDirectory(modulepath);
 
@@ -103,15 +106,20 @@ namespace Stugo.Interop
                 Path.ChangeExtension(resourceId, Path.GetExtension(resourceId)));
 
             // store the module in a temporary file
-            using (Stream resourceStream = resourceAssembly.GetManifestResourceStream(resourceId))
+            using (var resourceStream = resourceAssembly.GetManifestResourceStream(resourceId))
             {
+                if (resourceStream == null)
+                {
+                    return null;
+                }
+
                 const int bufferSize = 4096;
 
-                using (Stream outfile = File.Create(modulepath))
+                using (var outfile = File.Create(modulepath))
                 {
                     byte[] buffer = new byte[bufferSize];
 
-                    // write out the module file
+                    // Write out the module file
                     while (true)
                     {
                         int count = resourceStream.Read(buffer, 0, bufferSize);
@@ -149,10 +157,10 @@ namespace Stugo.Interop
         /// <summary>
         /// Loads a module and constructs a wrapper for it.
         /// </summary>
-        protected virtual object LoadUnmanagedModule(string path, Type wrapperType)
+        protected virtual object? LoadUnmanagedModule(string path, Type wrapperType)
         {
-            UnmanagedModuleLoaderBase loader = UnmanagedModuleLoaderBase.GetLoader(path);
-            object wrapper = Activator.CreateInstance(wrapperType);
+            var loader = UnmanagedModuleLoaderBase.GetLoader(path);
+            var wrapper = Activator.CreateInstance(wrapperType);
 
             foreach (FieldInfo field in wrapperType.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -161,7 +169,7 @@ namespace Stugo.Interop
                 if (!typeof(Delegate).IsAssignableFrom(delegateType.BaseType))
                     continue;
 
-                EntryPointAttribute entryPoint = (EntryPointAttribute)field.GetCustomAttributes(
+                var entryPoint = (EntryPointAttribute?)field.GetCustomAttributes(
                     typeof(EntryPointAttribute), true).SingleOrDefault();
 
                 string methodName = entryPoint != null ? entryPoint.EntryPoint : field.Name;

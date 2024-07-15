@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Stugo.Interop.Linux;
 using Stugo.Interop.Windows;
 
@@ -16,16 +12,7 @@ namespace Stugo.Interop
         /// <summary>
         /// Gets a value indicating if the current platform is Linunx.
         /// </summary>
-        public static bool IsLinux
-        {
-            get
-            {
-                // http://stackoverflow.com/a/5117005/358336
-                int p = (int)Environment.OSVersion.Platform;
-                return (p == 4) || (p == 6) || (p == 128);
-            }
-        }
-
+        public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         /// <summary>
         /// Gets a loader for the current platform.
@@ -39,7 +26,6 @@ namespace Stugo.Interop
             else
                 return new WindowsUnmanagedModuleLoader(modulePath);
         }
-
 
         /// <summary>
         /// Gets the path to the unmanaged module.
@@ -56,7 +42,6 @@ namespace Stugo.Interop
             this.ModulePath = modulePath;
         }
 
-
         /// <summary>
         /// Gets a delegate to a method in an unmanaged module.
         /// </summary>
@@ -69,20 +54,18 @@ namespace Stugo.Interop
             return Marshal.GetDelegateForFunctionPointer(procaddress, delegateType);
         }
 
-
         /// <summary>
         /// Gets a delegate to a method in an unmanaged module.
         /// </summary>
         /// <typeparam name="TDelegate">The type of the delegate to return.</typeparam>
         /// <param name="methodName">The name of the method.</param>
         /// <returns>A delegate to the method.</returns>
-        public virtual TDelegate GetDelegate<TDelegate>(string methodName)
+        public virtual TDelegate? GetDelegate<TDelegate>(string methodName)
             where TDelegate : class
         {
-            IntPtr procaddress = getUnmanagedMethodPointer(methodName);
-            return Marshal.GetDelegateForFunctionPointer(procaddress, typeof(TDelegate)) as TDelegate;
+            IntPtr procAddress = getUnmanagedMethodPointer(methodName);
+            return Marshal.GetDelegateForFunctionPointer(procAddress, typeof(TDelegate)) as TDelegate;
         }
-
 
         /// <summary>
         /// When overriden in a derived class, gets a pointer to an unmanaged method.
