@@ -10,10 +10,10 @@ namespace Stugo.Interop.Linux
     {
         const int RTLD_NOW = 2; // for dlopen's flags 
 
-        [DllImport("libdl.so")]
+        [DllImport("libdl")]
         protected static extern IntPtr dlopen(string filename, int flags);
 
-        [DllImport("libdl.so")]
+        [DllImport("libdl")]
         protected static extern IntPtr dlsym(IntPtr handle, string symbol);
 
 
