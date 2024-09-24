@@ -8,20 +8,11 @@ namespace Stugo.Interop.Linux
 {
     public class LinuxUnmanagedModuleLoader : UnmanagedModuleLoaderBase
     {
-        const int RTLD_NOW = 2; // for dlopen's flags 
-
-        [DllImport("libdl")]
-        protected static extern IntPtr dlopen(string filename, int flags);
-
-        [DllImport("libdl")]
-        protected static extern IntPtr dlsym(IntPtr handle, string symbol);
-
 
         /// <summary>
         /// Gets the handle for the unmanaged library.
         /// </summary>
         protected IntPtr ModuleHandle { get; private set; }
-
 
         /// <summary>
         /// Creates a new instance.
@@ -30,7 +21,7 @@ namespace Stugo.Interop.Linux
         public LinuxUnmanagedModuleLoader(string modulePath)
             : base(modulePath)
         {
-            this.ModuleHandle = dlopen(modulePath, RTLD_NOW);
+            this.ModuleHandle = NativeLibrary.Load(modulePath);
 
             // give a meaningful error if the library cannot be loaded.
             if (this.ModuleHandle == IntPtr.Zero)
@@ -50,8 +41,7 @@ namespace Stugo.Interop.Linux
         /// <returns>The method pointer.</returns>
         protected override IntPtr getUnmanagedMethodPointer(string methodName)
         {
-            IntPtr ptr = dlsym(this.ModuleHandle, methodName);
-
+            var ptr = NativeLibrary.GetExport(this.ModuleHandle, methodName);
             if (ptr == IntPtr.Zero)
                 throw new MissingMethodException(
                     string.Format(
